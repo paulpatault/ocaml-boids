@@ -1,0 +1,7 @@
+(executable
+  (name main)
+  (modes js)
+  (flags
+    (:standard -w -32 -w -33))
+  (libraries graphics js_of_ocaml-lwt)
+  (preprocess (pps js_of_ocaml-ppx)))
