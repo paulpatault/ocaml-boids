@@ -23,4 +23,9 @@ let div   a k = op ( /. ) a {x=k;y=k}
 let dist  a b =
   let dx = a.x -. b.x in
   let dy = a.y -. b.y in
-  (dx ** 2. +. dy ** 2.)
+  sqrt (dx ** 2. +. dy ** 2.)
+
+let (++.)   = add
+let (--.)   = sub
+let (//.)   = div
+let ( **. ) = scale

@@ -7,6 +7,8 @@ open Graphics
 open Point
 open Boids
 
+let _ = Random.self_init ()
+
 module Html = Dom_html
 
 let error f =
@@ -29,24 +31,33 @@ let drawBoid boid ctx =
   ctx##lineTo (boid.position.x -. 15.) (boid.position.y -. 5.);
   ctx##lineTo boid.position.x boid.position.y;
   ctx##fill;
-  ctx##setTransform 1. 0. 0. 1. 0. 0.
+  ctx##setTransform 1. 0. 0. 1. 0. 0.;
+
+  ctx##.strokeStyle := Js.string "#558cf466";
+  ctx##beginPath;
+  let hh = List.hd boid.history in
+  ctx##moveTo hh.x hh.y;
+  List.iter (fun point -> ctx##lineTo (point.x) (point.y)) boid.history;
+  ctx##stroke;
+  ()
 
 let ( >>= ) = Lwt.bind
 
 let rec animationLoop canvas =
 
   printBoids ();
-  Lwt_js.sleep 0.1
+  Lwt_js.sleep 0.01
   >>= fun () ->
     List.iter
       (
-        fun e ->
-          flyTowardsCenter e
-          ; avoidOthers e
-          ; matchVelocity e
-          ; limitSpeed e
-          ; keepWithinBounds e
-          ; e.position <- add e.position e.velocity
+        fun boid ->
+          flyTowardsCenter boid
+          ; avoidOthers boid
+          ; matchVelocity boid
+          ; limitSpeed boid
+          ; keepWithinBounds boid
+          ; boid.position <- boid.position ++. boid.velocity
+          ; majHistory boid
           (* ; e.history <- e.position :: e.history *)
           (* boid.history = boid.history.slice(-50); *)
       )
@@ -65,6 +76,9 @@ let start _ =
            Dom_html.CoerceTo.canvas)
         (fun () -> error "can't find canvas element %s" "boids")
   in
+  let aaa = canvas ##. id in
+  Printf.printf "%s\n" (Js.to_string aaa);
+
   ignore (animationLoop canvas);
   Js._false
 
