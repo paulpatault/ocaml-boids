@@ -3,7 +3,6 @@ open Js_of_ocaml_lwt
 open Lwt
 open Js
 open Dom_html
-open Graphics
 open Point
 open Boids
 
