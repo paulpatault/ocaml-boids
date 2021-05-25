@@ -113,12 +113,12 @@ let resize l =
     match l' with
     | [] -> acc
     | _::[] -> acc
-    | e::k -> aux (acc @ [e]) k
+    | e::k -> aux (e :: acc) k
   in
-  if List.length l > 50 then aux [] l
+  if List.length l > 50 then List.rev (aux [] l)
   else l
 
-let majHistory boid =
+let onMoreStep boid =
+  boid.position <- boid.position ++. boid.velocity;
   boid.history <- boid.position :: boid.history;
   boid.history <- resize boid.history
-

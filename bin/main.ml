@@ -55,10 +55,7 @@ let rec animationLoop canvas =
           ; matchVelocity boid
           ; limitSpeed boid
           ; keepWithinBounds boid
-          ; boid.position <- boid.position ++. boid.velocity
-          ; majHistory boid
-          (* ; e.history <- e.position :: e.history *)
-          (* boid.history = boid.history.slice(-50); *)
+          ; onMoreStep boid
       )
       !boids;
     let ctx = canvas##getContext Html._2d_ in
