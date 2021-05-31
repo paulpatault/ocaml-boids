@@ -2,6 +2,7 @@ open Point
 
 let width = 900.
 let height = 600.
+let prof = 600.
 let numBoids = 100
 let visualRange = 75.
 
@@ -27,8 +28,8 @@ let printBoids () =
 
 let initBoids () =
   for _ = 0 to numBoids - 1 do
-    let position = rand_point width height
-    in let velocity = sub (rand_point 10. 10.) {x=5.; y=5.}
+    let position = rand_point width height prof
+    in let velocity = sub (rand_point 10. 10. 10.) {x=5.; y=5.; z=5.}
     (* in boids := {position=position; velocity=velocity} :: !boids; *)
     in boids := {position=position; velocity=velocity; history=[]} :: !boids;
   done
@@ -46,11 +47,16 @@ let keepWithinBounds boid =
     then boid.velocity.y <- boid.velocity.y +. turnFactor;
   if boid.position.y > height -. margin
     then boid.velocity.y <- boid.velocity.y -. turnFactor;
+
+  if boid.position.z < margin
+    then boid.velocity.z <- boid.velocity.z +. turnFactor;
+  if boid.position.z > height -. margin
+    then boid.velocity.z <- boid.velocity.z -. turnFactor;
   ()
 
 let flyTowardsCenter boid =
   let centeringFactor = 0.015 in
-  let center = ref {x=0.;y=0.} in
+  let center = ref {x=0.;y=0.;z=0.} in
   let nbNeighbours = ref 0 in
   List.iter
     ( fun otherBoid ->
@@ -70,7 +76,7 @@ let flyTowardsCenter boid =
 let avoidOthers boid =
   let minDistance = 20. in
   let avoidFactor = 0.015 in
-  let move = ref {x=0.;y=0.} in
+  let move = ref {x=0.;y=0.;z=0.} in
   List.iter
     ( fun otherBoid ->
         if otherBoid <> boid then begin
@@ -82,7 +88,7 @@ let avoidOthers boid =
   boid.velocity <- boid.velocity ++. (!move **. avoidFactor)
 
 let matchVelocity boid =
-  let avgVelocity = ref {x=0.;y=0.} in
+  let avgVelocity = ref {x=0.;y=0.;z=0.} in
   let nbNeighbours = ref 0 in
   List.iter
     ( fun otherBoid ->
@@ -103,8 +109,8 @@ let matchVelocity boid =
     end
 
 let limitSpeed boid =
-  let speedLimit = 10. in
-  let speed = sqrt (boid.velocity.x ** 2. +. boid.velocity.y ** 2.) in
+  let speedLimit = 15. in
+  let speed = sqrt (boid.velocity.x ** 2. +. boid.velocity.y ** 2. +. boid.velocity.z ** 2.) in
   if speed > speedLimit then
     boid.velocity <- boid.velocity **. (speedLimit /. speed)
 

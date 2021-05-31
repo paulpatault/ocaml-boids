@@ -23,4 +23,5 @@ $ make run
 
 ### Resources
 
-- [Super site](https://www.red3d.com/cwr/boids/)
+1. [Super site](https://www.red3d.com/cwr/boids/)
+2. [Super site](http://www.kfish.org/boids/pseudocode.html)
