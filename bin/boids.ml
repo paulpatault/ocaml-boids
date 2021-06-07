@@ -3,8 +3,13 @@ open Point
 let width = 900.
 let height = 600.
 let prof = 600.
-let numBoids = 100
+let numBoids = ref 100
 let visualRange = 75.
+let margin = 150.
+let centeringFactor = ref 0.015
+let avoidFactor = ref 0.015
+let matchingFactor = ref 0.2
+let speedLimit = ref 5.
 
 type boid =
   {
@@ -27,7 +32,7 @@ let printBoids () =
   in aux 0 !boids
 
 let initBoids () =
-  for _ = 0 to numBoids - 1 do
+  for _ = 0 to !numBoids - 1 do
     let position = rand_point width height prof
     in let velocity = sub (rand_point 10. 10. 10.) {x=5.; y=5.; z=5.}
     (* in boids := {position=position; velocity=velocity} :: !boids; *)
@@ -35,7 +40,6 @@ let initBoids () =
   done
 
 let keepWithinBounds boid =
-  let margin = 150. in
   let turnFactor = 1. in
 
   if boid.position.x < margin
@@ -55,7 +59,6 @@ let keepWithinBounds boid =
   ()
 
 let flyTowardsCenter boid =
-  let centeringFactor = 0.015 in
   let center = ref {x=0.;y=0.;z=0.} in
   let nbNeighbours = ref 0 in
   List.iter
@@ -70,12 +73,11 @@ let flyTowardsCenter boid =
   if !nbNeighbours > 0 then
     begin
       center := !center //. (float_of_int !nbNeighbours);
-      boid.velocity <- boid.velocity ++. ((!center --. boid.position) **. centeringFactor);
+      boid.velocity <- boid.velocity ++. ((!center --. boid.position) **. !centeringFactor);
     end
 
 let avoidOthers boid =
   let minDistance = 20. in
-  let avoidFactor = 0.015 in
   let move = ref {x=0.;y=0.;z=0.} in
   List.iter
     ( fun otherBoid ->
@@ -85,7 +87,7 @@ let avoidOthers boid =
           then move := !move ++. (boid.position --. otherBoid.position);
         end)
     !boids;
-  boid.velocity <- boid.velocity ++. (!move **. avoidFactor)
+  boid.velocity <- boid.velocity ++. (!move **. !avoidFactor)
 
 let matchVelocity boid =
   let avgVelocity = ref {x=0.;y=0.;z=0.} in
@@ -99,20 +101,18 @@ let matchVelocity boid =
               incr nbNeighbours
           end)
     !boids;
-  let matchingFactor = 0.05 in
   if !nbNeighbours > 0 then
     begin
       avgVelocity := !avgVelocity //. (float_of_int !nbNeighbours);
       let diff = !avgVelocity --. boid.velocity in
-      let d' = diff **. matchingFactor in
+      let d' = diff **. !matchingFactor in
       boid.velocity <- boid.velocity ++. d'
     end
 
 let limitSpeed boid =
-  let speedLimit = 15. in
   let speed = sqrt (boid.velocity.x ** 2. +. boid.velocity.y ** 2. +. boid.velocity.z ** 2.) in
-  if speed > speedLimit then
-    boid.velocity <- boid.velocity **. (speedLimit /. speed)
+  if speed > !speedLimit then
+    boid.velocity <- boid.velocity **. (!speedLimit /. speed)
 
 let resize l =
   let rec aux acc l' =

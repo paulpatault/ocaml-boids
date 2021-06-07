@@ -43,20 +43,17 @@ let drawBoid boid ctx =
 let ( >>= ) = Lwt.bind
 
 let rec animationLoop canvas =
-
   printBoids ();
   Lwt_js.sleep 0.01
   >>= fun () ->
     List.iter
-      (
-        fun boid ->
-          flyTowardsCenter boid
-          ; avoidOthers boid
-          ; matchVelocity boid
-          ; limitSpeed boid
-          ; keepWithinBounds boid
-          ; onMoreStep boid
-      )
+      (fun boid ->
+        flyTowardsCenter boid
+        ; avoidOthers boid
+        ; matchVelocity boid
+        ; limitSpeed boid
+        ; keepWithinBounds boid
+        ; onMoreStep boid)
       !boids;
     let ctx = canvas##getContext Html._2d_ in
     ctx##clearRect 0. 0. width height;
@@ -66,15 +63,12 @@ let rec animationLoop canvas =
 let start _ =
   initBoids ();
   let canvas =
-    Opt.get
-        (Opt.bind
-           (Dom_html.document##getElementById (string "boids"))
-           Dom_html.CoerceTo.canvas)
-        (fun () -> error "can't find canvas element %s" "boids")
+    Opt.get 
+      (Opt.bind
+        (Dom_html.document##getElementById (string "boids"))
+        Dom_html.CoerceTo.canvas)
+      (fun () -> error "can't find canvas element %s" "boids")
   in
-  let aaa = canvas ##. id in
-  Printf.printf "%s\n" (Js.to_string aaa);
-
   ignore (animationLoop canvas);
   Js._false
 
