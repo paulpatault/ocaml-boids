@@ -34,11 +34,10 @@ let drawBoid boid ctx =
 
   ctx##.strokeStyle := Js.string "#558cf466";
   ctx##beginPath;
-  let hh = List.hd boid.history in
-  ctx##moveTo hh.x hh.y;
-  List.iter (fun point -> ctx##lineTo (point.x) (point.y)) boid.history;
-  ctx##stroke;
-  ()
+  let first = Queue.peek boid.history in
+  ctx##moveTo first.x first.y;
+  Queue.iter (fun point -> ctx##lineTo point.x point.y) boid.history;
+  ctx##stroke
 
 let ( >>= ) = Lwt.bind
 

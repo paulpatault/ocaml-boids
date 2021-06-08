@@ -9,7 +9,7 @@ type boid =
   {
     mutable position : point;
     mutable velocity : point;
-    mutable history : point list;
+    mutable history  : point Queue.t;
   }
 
 let boids : boid list ref = ref []
@@ -29,8 +29,7 @@ let initBoids () =
   for _ = 0 to numBoids - 1 do
     let position = rand_point width height
     in let velocity = sub (rand_point 10. 10.) {x=5.; y=5.}
-    (* in boids := {position=position; velocity=velocity} :: !boids; *)
-    in boids := {position=position; velocity=velocity; history=[]} :: !boids;
+    in boids := {position=position; velocity=velocity; history=Queue.create ()} :: !boids;
   done
 
 let keepWithinBounds boid =
@@ -120,5 +119,9 @@ let resize l =
 
 let onMoreStep boid =
   boid.position <- boid.position ++. boid.velocity;
-  boid.history <- boid.position :: boid.history;
-  boid.history <- resize boid.history
+
+  Queue.add boid.position boid.history;
+
+  if Queue.length boid.history > 50
+  then let _ = Queue.take boid.history
+  in ()
