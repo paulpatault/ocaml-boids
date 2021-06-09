@@ -18,7 +18,6 @@ let error f =
     f
 
 let drawBoid boid ctx =
-
   let angle = atan2 boid.velocity.y boid.velocity.x in
   ctx##translate boid.position.x boid.position.y;
   ctx##rotate angle;
@@ -42,24 +41,20 @@ let drawBoid boid ctx =
 let ( >>= ) = Lwt.bind
 
 let rec animationLoop canvas =
-
-  printBoids ();
   Lwt_js.sleep 0.01
   >>= fun () ->
     List.iter
-      (
-        fun boid ->
+      (fun boid ->
           flyTowardsCenter boid
           ; avoidOthers boid
           ; matchVelocity boid
           ; limitSpeed boid
           ; keepWithinBounds boid
-          ; onMoreStep boid
-      )
+          ; onMoreStep boid)
       !boids;
     let ctx = canvas##getContext Html._2d_ in
     ctx##clearRect 0. 0. width height;
-    List.iter (fun e -> drawBoid e ctx) !boids;
+    List.iter (fun boid -> drawBoid boid ctx) !boids;
     animationLoop canvas
 
 let start _ =
@@ -71,9 +66,6 @@ let start _ =
            Dom_html.CoerceTo.canvas)
         (fun () -> error "can't find canvas element %s" "boids")
   in
-  let aaa = canvas ##. id in
-  Printf.printf "%s\n" (Js.to_string aaa);
-
   ignore (animationLoop canvas);
   Js._false
 
