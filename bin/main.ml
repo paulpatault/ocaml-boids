@@ -23,9 +23,11 @@ let mk_color_from_z z =
   Js.string color_str
 
 let mk_color_from_z z =
-  let hue = 219 in
+  (* let hue = 219 in *)
+  let hue = int_of_float (z /. 600. *. 170. +. 150.) in
   let sat = 88 in
-  let light = (int_of_float z) / 600 * 50 + 25 in
+  (* let light = int_of_float (z /. 600. *. 50. +. 25.) in *)
+  let light = 65 in
   let color_str =
     "HSL(" ^ string_of_int hue ^ ","
     ^ string_of_int sat ^ "\u{0025},"
@@ -35,34 +37,32 @@ let mk_color_from_z z =
 let drawBoid boid canvas =
   let ctx = canvas##getContext Html._2d_ in
   let angle = atan2 boid.velocity.y boid.velocity.x in
-  Printf.printf "%3f\n" boid.position.z;
   let dx, dy =
     boid.position.z /. 900. *. 15. +. 5.,
     boid.position.z /. 600. *. 5. +. 1.5
   in
 
-  ctx##beginPath;
+  (* ctx##beginPath;
+  ctx##.strokeStyle := Js.string "#558cf466";
   let first = Queue.peek boid.history in
   ctx##moveTo first.x first.y;
   Queue.iter
     (fun point ->
       (* ctx##.strokeStyle := mk_color_from_z point.z true; *)
-      ctx##.strokeStyle := Js.string "#558cf466";
-      ctx##lineTo point.x point.y) 
+      ctx##lineTo point.x point.y)
     boid.history;
   ctx##stroke;
-  ctx##closePath;
+  ctx##closePath; *)
 
   ctx##translate boid.position.x boid.position.y;
   ctx##rotate angle;
   ctx##translate (-. boid.position.x) (-. boid.position.y);
   ctx##beginPath;
+  ctx##.fillStyle := mk_color_from_z boid.position.z;
   ctx##moveTo boid.position.x boid.position.y;
   ctx##lineTo (boid.position.x -. dx) (boid.position.y +. dy);
   ctx##lineTo (boid.position.x -. dx) (boid.position.y -. dy);
-  ctx##lineTo boid.position.x boid.position.y;
   ctx##closePath;
-  ctx##.fillStyle := mk_color_from_z boid.position.z;
   (* ctx##.fillStyle := Js.string "#558cf4"; *)
   ctx##fill;
   ctx##setTransform 1. 0. 0. 1. 0. 0.
