@@ -45,9 +45,10 @@ let rec animationLoop canvas =
   >>= fun () ->
     List.iter
       (fun boid ->
-          flyTowardsCenter boid
+          fusion boid
+          (* flyTowardsCenter boid
           ; avoidOthers boid
-          ; matchVelocity boid
+          ; matchVelocity boid *)
           ; limitSpeed boid
           ; keepWithinBounds boid
           ; onMoreStep boid)
