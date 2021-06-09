@@ -2,9 +2,7 @@
 
 Premier projet de test avec Js\_of\_ocaml.
 
-![screen](assets/screen.png)
-
-
+![](assets/vid.gif)
 
 ### Dépendances
 

@@ -3,13 +3,14 @@ open Point
 let width = 900.
 let height = 600.
 let prof = 600.
-let numBoids = ref 100
 let visualRange = 75.
 let margin = 150.
+let numBoids = ref 100
+let speedLimit = ref 7.
+let minDistance = ref 20.
 let centeringFactor = ref 0.015
 let avoidFactor = ref 0.015
-let matchingFactor = ref 0.2
-let speedLimit = ref 5.
+let matchingFactor = ref 0.05
 
 type boid =
   {
@@ -20,7 +21,7 @@ type boid =
 
 let boids : boid list ref = ref []
 
-let printBoids () =
+(* let printBoids () =
   let rec aux i = function
     | [] -> ()
     | e::k ->
@@ -29,7 +30,7 @@ let printBoids () =
         e.position.x e.position.y
         e.velocity.x e.velocity.y
       ; aux (i+1) k
-  in aux 0 !boids
+  in aux 0 !boids *)
 
 let initBoids () =
   for _ = 0 to !numBoids - 1 do
@@ -57,75 +58,52 @@ let keepWithinBounds boid =
     then boid.velocity.z <- boid.velocity.z -. turnFactor;
   ()
 
-let flyTowardsCenter boid =
+let fusion boid =
   let center = ref {x=0.;y=0.;z=0.} in
+  let move = ref {x=0.;y=0.;z=0.} in
+  let avgVelocity = ref {x=0.;y=0.;z=0.} in
   let nbNeighbours = ref 0 in
+
   List.iter
     ( fun otherBoid ->
         let distance = dist otherBoid.position boid.position in
         if distance < visualRange
         then begin
+          incr nbNeighbours;
+          (* flyTowardsCenter *)
           center := !center ++. otherBoid.position;
-          incr nbNeighbours
-        end)
-    !boids;
-  if !nbNeighbours > 0 then
-    begin
-      center := !center //. (float_of_int !nbNeighbours);
-      boid.velocity <- boid.velocity ++. ((!center --. boid.position) **. !centeringFactor);
-    end
-
-let avoidOthers boid =
-  let minDistance = 20. in
-  let move = ref {x=0.;y=0.;z=0.} in
-  List.iter
-    ( fun otherBoid ->
+          (* matchVelocity *)
+          avgVelocity := !avgVelocity ++. otherBoid.velocity
+        end;
         if otherBoid <> boid then begin
-          let distance = dist otherBoid.position boid.position in
-          if distance < minDistance
+          if distance < !minDistance
+          (* avoidOthers *)
           then move := !move ++. (boid.position --. otherBoid.position);
         end)
     !boids;
-  boid.velocity <- boid.velocity ++. (!move **. !avoidFactor)
 
-let matchVelocity boid =
-  let avgVelocity = ref {x=0.;y=0.;z=0.} in
-  let nbNeighbours = ref 0 in
-  List.iter
-    ( fun otherBoid ->
-          let distance = dist otherBoid.position boid.position in
-          if distance < visualRange
-          then begin
-              avgVelocity := !avgVelocity ++. otherBoid.velocity;
-              incr nbNeighbours
-          end)
-    !boids;
   if !nbNeighbours > 0 then
     begin
+      (* flyTowardsCenter *)
+      center := !center //. (float_of_int !nbNeighbours);
+      (* matchVelocity *)
+      boid.velocity <- boid.velocity ++. ((!center --. boid.position) **. !centeringFactor);
       avgVelocity := !avgVelocity //. (float_of_int !nbNeighbours);
+      (* avoidOthers *)
       let diff = !avgVelocity --. boid.velocity in
       let d' = diff **. !matchingFactor in
       boid.velocity <- boid.velocity ++. d'
-    end
+    end;
+  boid.velocity <- boid.velocity ++. (!move **. !avoidFactor)
 
 let limitSpeed boid =
+  let speedLimit = 6. in
   let speed = sqrt (boid.velocity.x ** 2. +. boid.velocity.y ** 2. +. boid.velocity.z ** 2.) in
-  if speed > !speedLimit then
-    boid.velocity <- boid.velocity **. (!speedLimit /. speed)
-
-let resize l =
-  let rec aux acc l' =
-    match l' with
-    | [] -> acc
-    | _::[] -> acc
-    | e::k -> aux (e :: acc) k
-  in
-  if List.length l > 50 then List.rev (aux [] l)
-  else l
+  if speed > speedLimit
+  then boid.velocity <- boid.velocity **. (speedLimit /. speed)
 
 let onMoreStep boid =
   boid.position <- boid.position ++. boid.velocity;
-
   Queue.add boid.position boid.history;
 
   if Queue.length boid.history > 50
