@@ -104,8 +104,8 @@ let matchVelocity boid =
 let limitSpeed boid =
   let speedLimit = 6. in
   let speed = sqrt (boid.velocity.x ** 2. +. boid.velocity.y ** 2.) in
-  if speed > speedLimit then
-    boid.velocity <- boid.velocity **. (speedLimit /. speed)
+  if speed > speedLimit 
+  then boid.velocity <- boid.velocity **. (speedLimit /. speed)
 
 let resize l =
   let rec aux acc l' =
